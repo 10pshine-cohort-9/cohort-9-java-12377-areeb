@@ -1,12 +1,7 @@
 spring:
   application:
     name: backend
-  datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=contact_manager;encrypt=true;trustServerCertificate=true
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    username: ${DB_USERNAME:areeb}
-    password: ${DB_PASSWORD:areeb123}
+  profiles:
+    active: dev
   jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
+    open-in-view: false
