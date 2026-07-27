@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -71,7 +72,7 @@ public class JwtUtil {
                     String extractedUser = claims.getSubject();
                     Date exp = claims.getExpiration();
                     boolean isNotExpired = exp != null && exp.after(new Date());
-                    return extractedUser.equals(username) && isNotExpired;
+                    return Objects.equals(extractedUser, username) && isNotExpired;
                 })
                 .orElse(false);
     }
