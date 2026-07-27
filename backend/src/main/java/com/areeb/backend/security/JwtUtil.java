@@ -4,12 +4,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -19,44 +19,36 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}")
+    @Value("${jwt.expiration:36000000}")
     private Long expiration;
 
+    private SecretKey key;
+
+    @PostConstruct
+    public void init() {
+        if (secret != null && !secret.isBlank()) {
+            this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        if (key == null && secret != null && !secret.isBlank()) {
+            this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        }
+        return key;
     }
 
     public String generateToken(String username) {
-        Instant now = Instant.now();
-        Instant expiry = now.plusMillis(expiration);
-
+        long expMillis = (expiration != null) ? expiration : 36000000L;
         return Jwts.builder()
                 .subject(username)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(expiry))
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expMillis))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String extractUsername(String token) {
-        return getClaims(token).map(Claims::getSubject).orElse(null);
-    }
-
-    public boolean isTokenValid(String token, String username) {
-        String extractedUsername = extractUsername(token);
-        if (extractedUsername == null) {
-            return false;
-        }
-        return extractedUsername.equals(username) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return getClaims(token)
-                .map(claims -> claims.getExpiration().before(new Date()))
-                .orElse(true);
-    }
-
-    private Optional<Claims> getClaims(String token) {
+    public Optional<Claims> getClaims(String token) {
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(getSigningKey())
@@ -67,5 +59,20 @@ public class JwtUtil {
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }
+    }
+
+    public String extractUsername(String token) {
+        return getClaims(token).map(Claims::getSubject).orElse(null);
+    }
+
+    public boolean isTokenValid(String token, String username) {
+        return getClaims(token)
+                .map(claims -> {
+                    String extractedUser = claims.getSubject();
+                    Date exp = claims.getExpiration();
+                    boolean isNotExpired = exp != null && exp.after(new Date());
+                    return extractedUser.equals(username) && isNotExpired;
+                })
+                .orElse(false);
     }
 }
