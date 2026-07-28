@@ -1,7 +1,9 @@
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\BackendApplication.java
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\config\SecurityConfig.java
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\controller\AuthController.java
+C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\controller\ContactController.java
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\dto\AuthResponse.java
+C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\dto\ContactDto.java
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\dto\LoginRequest.java
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\dto\RegisterRequest.java
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\model\Contact.java
@@ -12,3 +14,5 @@ C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\security\JwtUtil.java
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\security\UserDetailsServiceImpl.java
 C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\service\AuthService.java
+C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\service\ContactService.java
+C:\Users\malik\cohort-9-java-12377-areeb\backend\src\main\java\com\areeb\backend\service\ContactServiceImpl.java
