@@ -1,0 +1,73 @@
+package com.areeb.backend.dto;
+
+import java.util.List;
+
+public class ContactDto {
+
+    private Long id;
+    private String firstName;
+    private String lastName;
+    private String title;
+    private List<String> emails;
+    private List<String> phoneNumbers;
+
+    public ContactDto() {
+    }
+
+    public ContactDto(Long id, String firstName, String lastName, String title, List<String> emails, List<String> phoneNumbers) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.title = title;
+        this.emails = emails;
+        this.phoneNumbers = phoneNumbers;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public List<String> getEmails() {
+        return emails;
+    }
+
+    public void setEmails(List<String> emails) {
+        this.emails = emails;
+    }
+
+    public List<String> getPhoneNumbers() {
+        return phoneNumbers;
+    }
+
+    public void setPhoneNumbers(List<String> phoneNumbers) {
+        this.phoneNumbers = phoneNumbers;
+    }
+}
