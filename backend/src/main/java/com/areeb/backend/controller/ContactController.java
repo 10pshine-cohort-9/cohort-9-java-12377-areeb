@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/api/contacts")
 public class ContactController {
@@ -21,51 +23,51 @@ public class ContactController {
         this.contactService = contactService;
     }
 
-    @PostMapping("/user/{userId}")
-    public ResponseEntity<ContactDto> createContact(@PathVariable Long userId, @RequestBody ContactDto contactDto) {
-        ContactDto createdContact = contactService.createContact(userId, contactDto);
+    @PostMapping
+    public ResponseEntity<ContactDto> createContact(Principal principal, @RequestBody ContactDto contactDto) {
+        ContactDto createdContact = contactService.createContact(1L, contactDto);
         return new ResponseEntity<>(createdContact, HttpStatus.CREATED);
     }
 
-    @PutMapping("/user/{userId}/{contactId}")
+    @PutMapping("/{contactId}")
     public ResponseEntity<ContactDto> updateContact(
-            @PathVariable Long userId,
+            Principal principal,
             @PathVariable Long contactId,
             @RequestBody ContactDto contactDto) {
-        ContactDto updatedContact = contactService.updateContact(userId, contactId, contactDto);
+        ContactDto updatedContact = contactService.updateContact(1L, contactId, contactDto);
         return ResponseEntity.ok(updatedContact);
     }
 
-    @DeleteMapping("/user/{userId}/{contactId}")
-    public ResponseEntity<Void> deleteContact(@PathVariable Long userId, @PathVariable Long contactId) {
-        contactService.deleteContact(userId, contactId);
+    @DeleteMapping("/{contactId}")
+    public ResponseEntity<Void> deleteContact(Principal principal, @PathVariable Long contactId) {
+        contactService.deleteContact(1L, contactId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/user/{userId}/{contactId}")
-    public ResponseEntity<ContactDto> getContactById(@PathVariable Long userId, @PathVariable Long contactId) {
-        ContactDto contactDto = contactService.getContactById(userId, contactId);
+    @GetMapping("/{contactId}")
+    public ResponseEntity<ContactDto> getContactById(Principal principal, @PathVariable Long contactId) {
+        ContactDto contactDto = contactService.getContactById(1L, contactId);
         return ResponseEntity.ok(contactDto);
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping
     public ResponseEntity<Page<ContactDto>> getAllContacts(
-            @PathVariable Long userId,
+            Principal principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ContactDto> contacts = contactService.getAllContacts(userId, pageable);
+        Page<ContactDto> contacts = contactService.getAllContacts(1L, pageable);
         return ResponseEntity.ok(contacts);
     }
 
-    @GetMapping("/user/{userId}/search")
+    @GetMapping("/search")
     public ResponseEntity<Page<ContactDto>> searchContacts(
-            @PathVariable Long userId,
+            Principal principal,
             @RequestParam String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ContactDto> contacts = contactService.searchContacts(userId, query, pageable);
+        Page<ContactDto> contacts = contactService.searchContacts(1L, query, pageable);
         return ResponseEntity.ok(contacts);
     }
 }
