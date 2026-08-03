@@ -11,6 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.security.Principal;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -22,6 +24,9 @@ class ContactControllerTest {
     @Mock
     private ContactService contactService;
 
+    @Mock
+    private Principal principal;
+
     @InjectMocks
     private ContactController contactController;
 
@@ -32,7 +37,7 @@ class ContactControllerTest {
 
         when(contactService.createContact(eq(1L), any(ContactDto.class))).thenReturn(dto);
 
-        ResponseEntity<ContactDto> response = contactController.createContact(1L, dto);
+        ResponseEntity<ContactDto> response = contactController.createContact(principal, dto);
 
         assertNotNull(response);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
