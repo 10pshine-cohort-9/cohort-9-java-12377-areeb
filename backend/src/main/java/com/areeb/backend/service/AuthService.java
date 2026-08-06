@@ -3,20 +3,22 @@ package com.areeb.backend.service;
 import com.areeb.backend.dto.AuthResponse;
 import com.areeb.backend.dto.LoginRequest;
 import com.areeb.backend.dto.RegisterRequest;
+import com.areeb.backend.exception.ResourceNotFoundException;
+import com.areeb.backend.exception.UserAlreadyExistsException;
 import com.areeb.backend.model.User;
 import com.areeb.backend.repository.UserRepository;
 import com.areeb.backend.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.logging.Logger;
-
 @Service
 public class AuthService {
 
-    private static final Logger logger = Logger.getLogger(AuthService.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,11 +36,13 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
+        log.info("Registering user with email: {}", request.getEmail());
+
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new UserAlreadyExistsException("Username already exists");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new UserAlreadyExistsException("Email already exists");
         }
 
         User user = new User();
@@ -54,7 +58,7 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        logger.info("Processing authentication request for email: " + request.getEmail());
+        log.info("Authenticating user with email: {}", request.getEmail());
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -62,7 +66,7 @@ public class AuthService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getEmail()));
 
         String token = jwtUtil.generateToken(user.getUsername());
         return new AuthResponse(token, user.getUsername(), user.getEmail());
