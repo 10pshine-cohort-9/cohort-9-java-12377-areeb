@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -46,6 +47,13 @@ public class GlobalExceptionHandler {
         Map<String, String> response = new HashMap<>();
         response.put(ERROR_KEY, "User credentials have expired");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(InternalAuthenticationServiceException.class)
+    public ResponseEntity<Map<String, String>> handleInternalAuthServiceException(InternalAuthenticationServiceException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put(ERROR_KEY, "An internal authentication error occurred");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
     @ExceptionHandler(AuthenticationException.class)
