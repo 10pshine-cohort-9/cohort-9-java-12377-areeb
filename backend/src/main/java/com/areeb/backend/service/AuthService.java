@@ -49,7 +49,12 @@ public class AuthService {
         try {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username or Email already exists");
+            Throwable rootCause = e.getRootCause();
+            String message = (rootCause != null && rootCause.getMessage() != null) ? rootCause.getMessage().toLowerCase() : "";
+            if (message.contains("username") || message.contains("email") || message.contains("uk_")) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Username or Email already exists");
+            }
+            throw e;
         }
 
         String token = jwtUtil.generateToken(user.getUsername());
