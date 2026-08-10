@@ -4,12 +4,15 @@ import com.areeb.backend.dto.ContactDto;
 import com.areeb.backend.exception.ResourceNotFoundException;
 import com.areeb.backend.model.User;
 import com.areeb.backend.repository.UserRepository;
+import com.areeb.backend.service.ContactExportImportService;
 import com.areeb.backend.service.ContactService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,11 +25,13 @@ public class ContactController {
 
     private final ContactService contactService;
     private final UserRepository userRepository;
+    private final ContactExportImportService exportImportService;
 
     @Autowired
-    public ContactController(ContactService contactService, UserRepository userRepository) {
+    public ContactController(ContactService contactService, UserRepository userRepository, ContactExportImportService exportImportService) {
         this.contactService = contactService;
         this.userRepository = userRepository;
+        this.exportImportService = exportImportService;
     }
 
     private Long getUserId(Principal principal) {
@@ -109,6 +114,31 @@ public class ContactController {
             Pageable pageable = PageRequest.of(page, size);
             Page<ContactDto> contacts = contactService.searchContacts(userId, query, pageable);
             return ResponseEntity.ok(contacts);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<String> exportContacts(Principal principal) {
+        try {
+            Long userId = getUserId(principal);
+            String jsonOutput = exportImportService.exportContactsToJson(userId);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.json")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(jsonOutput);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<String> importContacts(Principal principal, @RequestBody String jsonContent) {
+        try {
+            Long userId = getUserId(principal);
+            exportImportService.importContactsFromJson(userId, jsonContent);
+            return ResponseEntity.ok("Contacts imported successfully");
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }

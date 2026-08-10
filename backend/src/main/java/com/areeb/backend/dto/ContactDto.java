@@ -1,6 +1,6 @@
 package com.areeb.backend.dto;
 
-import java.util.List;
+import java.util.Map;
 
 public class ContactDto {
 
@@ -8,13 +8,13 @@ public class ContactDto {
     private String firstName;
     private String lastName;
     private String title;
-    private List<String> emails;
-    private List<String> phoneNumbers;
+    private Map<String, String> emails;
+    private Map<String, String> phoneNumbers;
 
     public ContactDto() {
     }
 
-    public ContactDto(Long id, String firstName, String lastName, String title, List<String> emails, List<String> phoneNumbers) {
+    public ContactDto(Long id, String firstName, String lastName, String title, Map<String, String> emails, Map<String, String> phoneNumbers) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -55,19 +55,19 @@ public class ContactDto {
         this.title = title;
     }
 
-    public List<String> getEmails() {
+    public Map<String, String> getEmails() {
         return emails;
     }
 
-    public void setEmails(List<String> emails) {
+    public void setEmails(Map<String, String> emails) {
         this.emails = emails;
     }
 
-    public List<String> getPhoneNumbers() {
+    public Map<String, String> getPhoneNumbers() {
         return phoneNumbers;
     }
 
-    public void setPhoneNumbers(List<String> phoneNumbers) {
+    public void setPhoneNumbers(Map<String, String> phoneNumbers) {
         this.phoneNumbers = phoneNumbers;
     }
 }
