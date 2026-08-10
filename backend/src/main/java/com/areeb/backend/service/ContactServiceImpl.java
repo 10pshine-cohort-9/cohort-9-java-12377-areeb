@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ContactServiceImpl implements ContactService {
 
+    private static final String CONTACT_NOT_FOUND_MSG = "Contact not found with id: ";
+    private static final String USER_NOT_FOUND_MSG = "User not found with id: ";
+    private static final String UNAUTHORIZED_MSG = "Unauthorized access to contact";
+
     private final ContactRepository contactRepository;
     private final UserRepository userRepository;
 
@@ -25,7 +29,7 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ContactDto createContact(Long userId, ContactDto contactDto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MSG + userId));
 
         Contact contact = mapToEntity(contactDto);
         contact.setUser(user);
@@ -37,10 +41,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ContactDto updateContact(Long userId, Long contactId, ContactDto contactDto) {
         Contact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new RuntimeException("Contact not found with id: " + contactId));
+                .orElseThrow(() -> new IllegalArgumentException(CONTACT_NOT_FOUND_MSG + contactId));
 
         if (!contact.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized access to contact");
+            throw new SecurityException(UNAUTHORIZED_MSG);
         }
 
         contact.setFirstName(contactDto.getFirstName());
@@ -56,10 +60,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public void deleteContact(Long userId, Long contactId) {
         Contact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new RuntimeException("Contact not found with id: " + contactId));
+                .orElseThrow(() -> new IllegalArgumentException(CONTACT_NOT_FOUND_MSG + contactId));
 
         if (!contact.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized access to contact");
+            throw new SecurityException(UNAUTHORIZED_MSG);
         }
 
         contactRepository.delete(contact);
@@ -68,10 +72,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ContactDto getContactById(Long userId, Long contactId) {
         Contact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new RuntimeException("Contact not found with id: " + contactId));
+                .orElseThrow(() -> new IllegalArgumentException(CONTACT_NOT_FOUND_MSG + contactId));
 
         if (!contact.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized access to contact");
+            throw new SecurityException(UNAUTHORIZED_MSG);
         }
 
         return mapToDto(contact);
