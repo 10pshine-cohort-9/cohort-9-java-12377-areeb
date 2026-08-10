@@ -10,6 +10,7 @@ import com.areeb.backend.repository.UserRepository;
 import com.areeb.backend.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -51,7 +52,16 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhoneNumber(request.getPhoneNumber());
 
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            Throwable rootCause = e.getRootCause();
+            String message = (rootCause != null && rootCause.getMessage() != null) ? rootCause.getMessage().toLowerCase() : "";
+            if (message.contains("username") || message.contains("email") || message.contains("uk_")) {
+                throw new UserAlreadyExistsException("Username or Email already exists");
+            }
+            throw e;
+        }
 
         String token = jwtUtil.generateToken(user.getUsername());
         return new AuthResponse(token, user.getUsername(), user.getEmail());
