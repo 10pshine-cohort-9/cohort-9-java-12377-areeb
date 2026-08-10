@@ -1,6 +1,9 @@
 package com.areeb.backend.controller;
 
 import com.areeb.backend.dto.ContactDto;
+import com.areeb.backend.exception.ResourceNotFoundException;
+import com.areeb.backend.model.User;
+import com.areeb.backend.repository.UserRepository;
 import com.areeb.backend.service.ContactService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,16 +21,26 @@ import java.security.Principal;
 public class ContactController {
 
     private final ContactService contactService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public ContactController(ContactService contactService) {
+    public ContactController(ContactService contactService, UserRepository userRepository) {
         this.contactService = contactService;
+        this.userRepository = userRepository;
+    }
+
+    private Long getUserId(Principal principal) {
+        String username = principal.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+        return user.getId();
     }
 
     @PostMapping
     public ResponseEntity<ContactDto> createContact(Principal principal, @RequestBody ContactDto contactDto) {
         try {
-            ContactDto createdContact = contactService.createContact(1L, contactDto);
+            Long userId = getUserId(principal);
+            ContactDto createdContact = contactService.createContact(userId, contactDto);
             return new ResponseEntity<>(createdContact, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -40,7 +53,8 @@ public class ContactController {
             @PathVariable Long contactId,
             @RequestBody ContactDto contactDto) {
         try {
-            ContactDto updatedContact = contactService.updateContact(1L, contactId, contactDto);
+            Long userId = getUserId(principal);
+            ContactDto updatedContact = contactService.updateContact(userId, contactId, contactDto);
             return ResponseEntity.ok(updatedContact);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -50,7 +64,8 @@ public class ContactController {
     @DeleteMapping("/{contactId}")
     public ResponseEntity<Void> deleteContact(Principal principal, @PathVariable Long contactId) {
         try {
-            contactService.deleteContact(1L, contactId);
+            Long userId = getUserId(principal);
+            contactService.deleteContact(userId, contactId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -60,7 +75,8 @@ public class ContactController {
     @GetMapping("/{contactId}")
     public ResponseEntity<ContactDto> getContactById(Principal principal, @PathVariable Long contactId) {
         try {
-            ContactDto contactDto = contactService.getContactById(1L, contactId);
+            Long userId = getUserId(principal);
+            ContactDto contactDto = contactService.getContactById(userId, contactId);
             return ResponseEntity.ok(contactDto);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -73,8 +89,9 @@ public class ContactController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         try {
+            Long userId = getUserId(principal);
             Pageable pageable = PageRequest.of(page, size);
-            Page<ContactDto> contacts = contactService.getAllContacts(1L, pageable);
+            Page<ContactDto> contacts = contactService.getAllContacts(userId, pageable);
             return ResponseEntity.ok(contacts);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -88,8 +105,9 @@ public class ContactController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         try {
+            Long userId = getUserId(principal);
             Pageable pageable = PageRequest.of(page, size);
-            Page<ContactDto> contacts = contactService.searchContacts(1L, query, pageable);
+            Page<ContactDto> contacts = contactService.searchContacts(userId, query, pageable);
             return ResponseEntity.ok(contacts);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

@@ -37,7 +37,7 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
-        log.info("Registering user with email: {}", request.getEmail());
+        log.info("Executing user registration request");
 
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new UserAlreadyExistsException("Username already exists");
@@ -68,7 +68,7 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        log.info("Authenticating user with email: {}", request.getEmail());
+        log.info("Executing user authentication request");
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -76,7 +76,7 @@ public class AuthService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getEmail()));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         String token = jwtUtil.generateToken(user.getUsername());
         return new AuthResponse(token, user.getUsername(), user.getEmail());
