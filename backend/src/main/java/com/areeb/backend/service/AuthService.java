@@ -14,8 +14,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.logging.Logger;
+
 @Service
 public class AuthService {
+
+    private static final Logger logger = Logger.getLogger(AuthService.class.getName());
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -62,6 +66,8 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        logger.info("Processing authentication request for email: " + request.getEmail());
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(), request.getPassword())
