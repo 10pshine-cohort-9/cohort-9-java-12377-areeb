@@ -1,5 +1,7 @@
 package com.areeb.backend.dto;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ContactDto {
@@ -59,15 +61,35 @@ public class ContactDto {
         return emails;
     }
 
-    public void setEmails(Map<String, String> emails) {
-        this.emails = emails;
+    // Flexible setter supporting both Map and legacy List/Array formats
+    @SuppressWarnings("unchecked")
+    public void setEmails(Object emailsObj) {
+        if (emailsObj instanceof Map) {
+            this.emails = (Map<String, String>) emailsObj;
+        } else if (emailsObj instanceof List) {
+            this.emails = new HashMap<>();
+            List<?> list = (List<?>) emailsObj;
+            for (int i = 0; i < list.size(); i++) {
+                this.emails.put("email" + (i + 1), String.valueOf(list.get(i)));
+            }
+        }
     }
 
     public Map<String, String> getPhoneNumbers() {
         return phoneNumbers;
     }
 
-    public void setPhoneNumbers(Map<String, String> phoneNumbers) {
-        this.phoneNumbers = phoneNumbers;
+    // Flexible setter supporting both Map and legacy List/Array formats
+    @SuppressWarnings("unchecked")
+    public void setPhoneNumbers(Object phoneNumbersObj) {
+        if (phoneNumbersObj instanceof Map) {
+            this.phoneNumbers = (Map<String, String>) phoneNumbersObj;
+        } else if (phoneNumbersObj instanceof List) {
+            this.phoneNumbers = new HashMap<>();
+            List<?> list = (List<?>) phoneNumbersObj;
+            for (int i = 0; i < list.size(); i++) {
+                this.phoneNumbers.put("phone" + (i + 1), String.valueOf(list.get(i)));
+            }
+        }
     }
 }
