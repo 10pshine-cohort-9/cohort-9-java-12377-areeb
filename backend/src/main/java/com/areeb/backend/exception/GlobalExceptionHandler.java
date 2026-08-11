@@ -124,7 +124,7 @@ public class GlobalExceptionHandler {
 
         Map<String, Object> body = new HashMap<>();
         body.put(TIMESTAMP, LocalDateTime.now(ZoneId.of("UTC")));
-        body.put(MESSAGE, "An unexpected error occurred: " + ex.getMessage());
+        body.put(MESSAGE, "An unexpected internal server error occurred.");
         body.put(STATUS, HttpStatus.INTERNAL_SERVER_ERROR.value());
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);

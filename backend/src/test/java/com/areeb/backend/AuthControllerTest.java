@@ -39,9 +39,10 @@ class AuthControllerTest {
         registerRequest.setUsername("testuser");
         registerRequest.setEmail("test@example.com");
         registerRequest.setPassword("password123");
+        registerRequest.setPhoneNumber("+1234567890"); // Added a valid phone number fixture
 
         loginRequest = new LoginRequest();
-        loginRequest.setEmail("test@example.com");
+        loginRequest.setUsername("testuser"); // Updated to match username change
         loginRequest.setPassword("password123");
 
         authResponse = new AuthResponse("mocked-jwt-token", "testuser", "test@example.com");

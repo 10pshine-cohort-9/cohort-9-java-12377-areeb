@@ -33,8 +33,7 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
         List<Contact> contacts = contactRepository.findByUserId(userId);
         List<ContactDto> contactDtos = new ArrayList<>();
 
-        for (int i = 0; i < contacts.size(); i++) {
-            Contact contact = contacts.get(i);
+        for (Contact contact : contacts) {
             ContactDto dto = new ContactDto(
                     contact.getId(),
                     contact.getFirstName(),
@@ -49,7 +48,7 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
         try {
             return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(contactDtos);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to export contacts: " + e.getMessage());
+            throw new IllegalArgumentException("Failed to export contacts: " + e.getMessage(), e);
         }
     }
 
@@ -59,10 +58,9 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         try {
-            List<ContactDto> contactDtos = objectMapper.readValue(jsonContent, new TypeReference<List<ContactDto>>() {});
+            List<ContactDto> contactDtos = objectMapper.readValue(jsonContent, new TypeReference<>() {});
 
-            for (int i = 0; i < contactDtos.size(); i++) {
-                ContactDto dto = contactDtos.get(i);
+            for (ContactDto dto : contactDtos) {
                 Contact contact = new Contact();
                 contact.setFirstName(dto.getFirstName());
                 contact.setLastName(dto.getLastName());
@@ -74,7 +72,7 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
                 contactRepository.save(contact);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to import contacts: " + e.getMessage());
+            throw new IllegalArgumentException("Failed to import contacts: " + e.getMessage(), e);
         }
     }
 }

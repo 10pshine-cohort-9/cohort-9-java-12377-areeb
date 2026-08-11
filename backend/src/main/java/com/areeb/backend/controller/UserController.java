@@ -3,6 +3,7 @@ package com.areeb.backend.controller;
 import com.areeb.backend.dto.ChangePasswordRequest;
 import com.areeb.backend.dto.UserProfileResponse;
 import com.areeb.backend.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<String> changePassword(Authentication authentication, @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<String> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(authentication.getName(), request);
         return ResponseEntity.ok("Password changed successfully");
     }

@@ -95,7 +95,9 @@ public class ContactController {
             @RequestParam(defaultValue = "10") int size) {
         try {
             Long userId = getUserId(principal);
-            Pageable pageable = PageRequest.of(page, size);
+            int safePage = Math.max(0, page);
+            int safeSize = Math.clamp(size, 1, 50);
+            Pageable pageable = PageRequest.of(safePage, safeSize);
             Page<ContactDto> contacts = contactService.getAllContacts(userId, pageable);
             return ResponseEntity.ok(contacts);
         } catch (RuntimeException e) {
@@ -111,7 +113,9 @@ public class ContactController {
             @RequestParam(defaultValue = "10") int size) {
         try {
             Long userId = getUserId(principal);
-            Pageable pageable = PageRequest.of(page, size);
+            int safePage = Math.max(0, page);
+            int safeSize = Math.clamp(size, 1, 50);
+            Pageable pageable = PageRequest.of(safePage, safeSize);
             Page<ContactDto> contacts = contactService.searchContacts(userId, query, pageable);
             return ResponseEntity.ok(contacts);
         } catch (RuntimeException e) {
