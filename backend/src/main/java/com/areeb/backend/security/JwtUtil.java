@@ -18,8 +18,8 @@ import java.util.Optional;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret:defaultSecretKeyWhichIsLongEnoughForHmacShaAlgorithm384BitsOrMore}")
-    private String secret = "defaultSecretKeyWhichIsLongEnoughForHmacShaAlgorithm384BitsOrMore";
+    @Value("${jwt.secret}")
+    private String secret;
 
     @Value("${jwt.expiration:36000000}")
     private Long expiration = 36000000L;
@@ -29,7 +29,7 @@ public class JwtUtil {
     @PostConstruct
     public void init() {
         if (secret == null || secret.isBlank()) {
-            secret = "defaultSecretKeyWhichIsLongEnoughForHmacShaAlgorithm384BitsOrMore";
+            throw new IllegalStateException("JWT_SECRET environment variable or jwt.secret property must not be blank!");
         }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
