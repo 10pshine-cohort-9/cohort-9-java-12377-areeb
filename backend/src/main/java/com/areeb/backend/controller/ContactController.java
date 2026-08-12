@@ -6,6 +6,7 @@ import com.areeb.backend.model.User;
 import com.areeb.backend.repository.UserRepository;
 import com.areeb.backend.service.ContactExportImportService;
 import com.areeb.backend.service.ContactService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,7 +43,7 @@ public class ContactController {
     }
 
     @PostMapping
-    public ResponseEntity<ContactDto> createContact(Principal principal, @RequestBody ContactDto contactDto) {
+    public ResponseEntity<ContactDto> createContact(Principal principal, @Valid @RequestBody ContactDto contactDto) {
         try {
             Long userId = getUserId(principal);
             ContactDto createdContact = contactService.createContact(userId, contactDto);
@@ -56,7 +57,7 @@ public class ContactController {
     public ResponseEntity<ContactDto> updateContact(
             Principal principal,
             @PathVariable Long contactId,
-            @RequestBody ContactDto contactDto) {
+            @Valid @RequestBody ContactDto contactDto) {
         try {
             Long userId = getUserId(principal);
             ContactDto updatedContact = contactService.updateContact(userId, contactId, contactDto);
