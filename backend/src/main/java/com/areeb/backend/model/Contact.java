@@ -1,6 +1,7 @@
 package com.areeb.backend.model;
 
 import jakarta.persistence.*;
+import java.util.HashMap;
 import java.util.Map;
 
 @Entity
@@ -11,27 +12,33 @@ public class Contact {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String firstName;
 
+    @Column(nullable = false)
     private String lastName;
 
     private String title;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "contact_emails", joinColumns = @JoinColumn(name = "contact_id"))
     @MapKeyColumn(name = "email_label")
     @Column(name = "email_address")
-    private Map<String, String> emails; // e.g., "work" -> "john@work.com"
+    private Map<String, String> emails = new HashMap<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "contact_phone_numbers", joinColumns = @JoinColumn(name = "contact_id"))
     @MapKeyColumn(name = "phone_label")
     @Column(name = "phone_number")
-    private Map<String, String> phoneNumbers; // e.g., "personal" -> "555-0192"
+    private Map<String, String> phoneNumbers = new HashMap<>();
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public Contact() {
+        // Default constructor required by JPA
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

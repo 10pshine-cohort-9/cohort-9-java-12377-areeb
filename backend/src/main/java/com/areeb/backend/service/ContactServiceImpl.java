@@ -89,9 +89,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public Page<ContactDto> searchContacts(Long userId, String query, Pageable pageable) {
-        Page<Contact> contacts = contactRepository
-                .findByUserIdAndFirstNameContainingIgnoreCaseOrUserIdAndLastNameContainingIgnoreCase(
-                        userId, query, userId, query, pageable);
+        Page<Contact> contacts = contactRepository.searchContacts(userId, query, pageable);
         return contacts.map(this::mapToDto);
     }
 
