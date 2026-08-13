@@ -11,8 +11,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class ContactServiceImpl implements ContactService {
 
     private static final String CONTACT_NOT_FOUND = "Contact not found with id: ";
@@ -82,12 +84,14 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ContactDto> getAllContacts(Long userId, Pageable pageable) {
         Page<Contact> contacts = contactRepository.findByUserId(userId, pageable);
         return contacts.map(this::mapToDto);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ContactDto> searchContacts(Long userId, String query, Pageable pageable) {
         Page<Contact> contacts = contactRepository.searchContacts(userId, query, pageable);
         return contacts.map(this::mapToDto);

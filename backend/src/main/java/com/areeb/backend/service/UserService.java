@@ -4,9 +4,10 @@ import com.areeb.backend.dto.ChangePasswordRequest;
 import com.areeb.backend.dto.UserProfileResponse;
 import com.areeb.backend.model.User;
 import com.areeb.backend.repository.UserRepository;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserService {
@@ -21,16 +22,16 @@ public class UserService {
 
     public UserProfileResponse getUserProfile(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         return new UserProfileResponse(user.getId(), user.getUsername(), user.getEmail(), user.getPhoneNumber());
     }
 
     public void changePassword(String username, ChangePasswordRequest request) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid old password");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid old password");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
