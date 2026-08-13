@@ -3,23 +3,23 @@ package com.areeb.backend.service;
 import com.areeb.backend.dto.AuthResponse;
 import com.areeb.backend.dto.LoginRequest;
 import com.areeb.backend.dto.RegisterRequest;
+import com.areeb.backend.exception.ResourceNotFoundException;
+import com.areeb.backend.exception.UserAlreadyExistsException;
 import com.areeb.backend.model.User;
 import com.areeb.backend.repository.UserRepository;
 import com.areeb.backend.security.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.logging.Logger;
 
 @Service
 public class AuthService {
 
-    private static final Logger logger = Logger.getLogger(AuthService.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -37,11 +37,13 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
+        log.info("Executing user registration request");
+
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
+            throw new UserAlreadyExistsException("Username already exists");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
+            throw new UserAlreadyExistsException("Email already exists");
         }
 
         User user = new User();
@@ -56,7 +58,7 @@ public class AuthService {
             Throwable rootCause = e.getRootCause();
             String message = (rootCause != null && rootCause.getMessage() != null) ? rootCause.getMessage().toLowerCase() : "";
             if (message.contains("username") || message.contains("email") || message.contains("uk_")) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Username or Email already exists");
+                throw new UserAlreadyExistsException("Username or Email already exists");
             }
             throw e;
         }
@@ -66,15 +68,15 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        logger.info("Processing authentication request for email: " + request.getEmail());
+        log.info("Executing user authentication request");
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(), request.getPassword())
+                        request.getUsername(), request.getPassword())
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         String token = jwtUtil.generateToken(user.getUsername());
         return new AuthResponse(token, user.getUsername(), user.getEmail());

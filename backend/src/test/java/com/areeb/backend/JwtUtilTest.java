@@ -17,6 +17,8 @@ class JwtUtilTest {
         // Inject secret key and expiration time for tests
         ReflectionTestUtils.setField(jwtUtil, "secret", "mySuperSecretKeyForJwtSigning12345678901234567890");
         ReflectionTestUtils.setField(jwtUtil, "expiration", 3600000L);
+        // Explicitly initialize the key since @PostConstruct doesn't run with 'new JwtUtil()'
+        jwtUtil.init();
     }
 
     @Test

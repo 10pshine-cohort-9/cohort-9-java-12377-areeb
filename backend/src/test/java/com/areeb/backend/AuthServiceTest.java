@@ -67,14 +67,14 @@ class AuthServiceTest {
     @Test
     void testLogin_Success() {
         LoginRequest request = new LoginRequest();
-        request.setEmail("areeb@example.com");
+        request.setUsername("areeb");
         request.setPassword("password123");
 
         User user = new User();
         user.setUsername("areeb");
         user.setEmail("areeb@example.com");
 
-        when(userRepository.findByEmail("areeb@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername("areeb")).thenReturn(Optional.of(user));
         when(jwtUtil.generateToken("areeb")).thenReturn("mocked-jwt-token");
 
         AuthResponse response = authService.login(request);

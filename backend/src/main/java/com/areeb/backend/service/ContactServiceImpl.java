@@ -1,6 +1,7 @@
 package com.areeb.backend.service;
 
 import com.areeb.backend.dto.ContactDto;
+import com.areeb.backend.exception.ResourceNotFoundException;
 import com.areeb.backend.model.Contact;
 import com.areeb.backend.model.User;
 import com.areeb.backend.repository.ContactRepository;
@@ -8,14 +9,13 @@ import com.areeb.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ContactServiceImpl implements ContactService {
 
-    private static final String CONTACT_NOT_FOUND_MSG = "Contact not found with id: ";
-    private static final String USER_NOT_FOUND_MSG = "User not found with id: ";
-    private static final String UNAUTHORIZED_MSG = "Unauthorized access to contact";
+    private static final String CONTACT_NOT_FOUND = "Contact not found with id: ";
 
     private final ContactRepository contactRepository;
     private final UserRepository userRepository;
@@ -29,7 +29,7 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ContactDto createContact(Long userId, ContactDto contactDto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND_MSG + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         Contact contact = mapToEntity(contactDto);
         contact.setUser(user);
@@ -41,10 +41,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ContactDto updateContact(Long userId, Long contactId, ContactDto contactDto) {
         Contact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new IllegalArgumentException(CONTACT_NOT_FOUND_MSG + contactId));
+                .orElseThrow(() -> new ResourceNotFoundException(CONTACT_NOT_FOUND + contactId));
 
         if (!contact.getUser().getId().equals(userId)) {
-            throw new SecurityException(UNAUTHORIZED_MSG);
+            throw new AccessDeniedException("Unauthorized access to contact");
         }
 
         contact.setFirstName(contactDto.getFirstName());
@@ -60,10 +60,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public void deleteContact(Long userId, Long contactId) {
         Contact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new IllegalArgumentException(CONTACT_NOT_FOUND_MSG + contactId));
+                .orElseThrow(() -> new ResourceNotFoundException(CONTACT_NOT_FOUND + contactId));
 
         if (!contact.getUser().getId().equals(userId)) {
-            throw new SecurityException(UNAUTHORIZED_MSG);
+            throw new AccessDeniedException("Unauthorized access to contact");
         }
 
         contactRepository.delete(contact);
@@ -72,10 +72,10 @@ public class ContactServiceImpl implements ContactService {
     @Override
     public ContactDto getContactById(Long userId, Long contactId) {
         Contact contact = contactRepository.findById(contactId)
-                .orElseThrow(() -> new IllegalArgumentException(CONTACT_NOT_FOUND_MSG + contactId));
+                .orElseThrow(() -> new ResourceNotFoundException(CONTACT_NOT_FOUND + contactId));
 
         if (!contact.getUser().getId().equals(userId)) {
-            throw new SecurityException(UNAUTHORIZED_MSG);
+            throw new AccessDeniedException("Unauthorized access to contact");
         }
 
         return mapToDto(contact);
@@ -89,9 +89,7 @@ public class ContactServiceImpl implements ContactService {
 
     @Override
     public Page<ContactDto> searchContacts(Long userId, String query, Pageable pageable) {
-        Page<Contact> contacts = contactRepository
-                .findByUserIdAndFirstNameContainingIgnoreCaseOrUserIdAndLastNameContainingIgnoreCase(
-                        userId, query, userId, query, pageable);
+        Page<Contact> contacts = contactRepository.searchContacts(userId, query, pageable);
         return contacts.map(this::mapToDto);
     }
 

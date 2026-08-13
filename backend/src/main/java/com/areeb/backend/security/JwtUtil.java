@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,30 +22,29 @@ public class JwtUtil {
     private String secret;
 
     @Value("${jwt.expiration:36000000}")
-    private Long expiration;
+    private Long expiration = 36000000L;
 
     private SecretKey key;
 
     @PostConstruct
     public void init() {
-        if (secret != null && !secret.isBlank()) {
-            this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET environment variable or jwt.secret property must not be blank!");
         }
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     private SecretKey getSigningKey() {
-        if (key == null && secret != null && !secret.isBlank()) {
-            this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        }
         return key;
     }
 
     public String generateToken(String username) {
         long expMillis = (expiration != null) ? expiration : 36000000L;
+        Instant now = Instant.now();
         return Jwts.builder()
                 .subject(username)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expMillis))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(expMillis)))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -71,7 +71,7 @@ public class JwtUtil {
                 .map(claims -> {
                     String extractedUser = claims.getSubject();
                     Date exp = claims.getExpiration();
-                    boolean isNotExpired = exp != null && exp.after(new Date());
+                    boolean isNotExpired = exp != null && exp.toInstant().isAfter(Instant.now());
                     return Objects.equals(extractedUser, username) && isNotExpired;
                 })
                 .orElse(false);

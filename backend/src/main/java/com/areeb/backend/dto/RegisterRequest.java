@@ -19,7 +19,8 @@ public class RegisterRequest {
     private String password;
 
     @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^\\+?\\d{10,15}$", message = "Invalid phone number format")    private String phoneNumber;
+    @Pattern(regexp = "^\\+?\\d{10,15}$", message = "Invalid phone number format")
+    private String phoneNumber;
 
     public String getUsername() {
         return username;

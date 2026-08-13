@@ -21,6 +21,15 @@ public class User {
 
     private String phoneNumber;
 
+    public User() {}
+
+    public User(String username, String email, String password, String phoneNumber) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.phoneNumber = phoneNumber;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

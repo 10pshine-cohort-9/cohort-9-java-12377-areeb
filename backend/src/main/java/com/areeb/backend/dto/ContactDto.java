@@ -1,6 +1,8 @@
 package com.areeb.backend.dto;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ContactDto {
 
@@ -8,13 +10,13 @@ public class ContactDto {
     private String firstName;
     private String lastName;
     private String title;
-    private List<String> emails;
-    private List<String> phoneNumbers;
+    private Map<String, String> emails;
+    private Map<String, String> phoneNumbers;
 
     public ContactDto() {
     }
 
-    public ContactDto(Long id, String firstName, String lastName, String title, List<String> emails, List<String> phoneNumbers) {
+    public ContactDto(Long id, String firstName, String lastName, String title, Map<String, String> emails, Map<String, String> phoneNumbers) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -55,19 +57,50 @@ public class ContactDto {
         this.title = title;
     }
 
-    public List<String> getEmails() {
+    public Map<String, String> getEmails() {
         return emails;
     }
 
-    public void setEmails(List<String> emails) {
-        this.emails = emails;
+    public void setEmails(Object emailsObj) {
+        this.emails = parseCollectionInput(emailsObj, "email");
     }
 
-    public List<String> getPhoneNumbers() {
+    public Map<String, String> getPhoneNumbers() {
         return phoneNumbers;
     }
 
-    public void setPhoneNumbers(List<String> phoneNumbers) {
-        this.phoneNumbers = phoneNumbers;
+    public void setPhoneNumbers(Object phoneNumbersObj) {
+        this.phoneNumbers = parseCollectionInput(phoneNumbersObj, "phone");
+    }
+
+    private Map<String, String> parseCollectionInput(Object input, String prefix) {
+        if (input == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
+
+        return switch (input) {
+            case Map<?, ?> rawMap -> {
+                Map<String, String> resultMap = new HashMap<>();
+                for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
+                    if (!(entry.getKey() instanceof String key) || !(entry.getValue() instanceof String value)) {
+                        throw new IllegalArgumentException("Map keys and values must be strings");
+                    }
+                    resultMap.put(key, value);
+                }
+                yield resultMap;
+            }
+            case List<?> list -> {
+                Map<String, String> resultMap = new HashMap<>();
+                for (int i = 0; i < list.size(); i++) {
+                    Object item = list.get(i);
+                    if (!(item instanceof String strItem)) {
+                        throw new IllegalArgumentException("List elements must be non-null strings");
+                    }
+                    resultMap.put(prefix + (i + 1), strItem);
+                }
+                yield resultMap;
+            }
+            default -> throw new IllegalArgumentException("Invalid input type");
+        };
     }
 }
