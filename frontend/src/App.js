@@ -1,25 +1,60 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import Login from './components/Login';
+import Register from './components/Register';
+import Dashboard from './components/Dashboard';
 
 function App() {
-  return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-              className="App-link"
-              href="https://react.dev"
-              target="_blank"
-              rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-  );
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLogin, setIsLogin] = useState(true);
+
+    if (isLoggedIn) {
+        return <Dashboard onLogout={() => setIsLoggedIn(false)} />;
+    }
+
+    return (
+        <div style={{ fontFamily: 'Inter, system-ui, sans-serif', background: '#f8fafc', minHeight: '100vh', padding: '40px 20px', boxSizing: 'border-box' }}>
+            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'inline-flex', background: '#e2e8f0', padding: '4px', borderRadius: '8px' }}>
+                    <button
+                        onClick={() => setIsLogin(true)}
+                        style={{
+                            padding: '8px 24px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontWeight: '600',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            background: isLogin ? '#ffffff' : 'transparent',
+                            color: isLogin ? '#2563eb' : '#64748b',
+                            boxShadow: isLogin ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        Sign In
+                    </button>
+                    <button
+                        onClick={() => setIsLogin(false)}
+                        style={{
+                            padding: '8px 24px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            fontWeight: '600',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            background: !isLogin ? '#ffffff' : 'transparent',
+                            color: !isLogin ? '#2563eb' : '#64748b',
+                            boxShadow: !isLogin ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+
+            {isLogin ? <Login onLoginSuccess={() => setIsLoggedIn(true)} /> : <Register onRegisterSuccess={() => setIsLoggedIn(true)} />}
+        </div>
+    );
 }
 
 export default App;
