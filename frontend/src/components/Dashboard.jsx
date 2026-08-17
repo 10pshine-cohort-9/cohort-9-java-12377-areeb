@@ -17,6 +17,7 @@ function Dashboard({ onLogout }) {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
 
     const [firstName, setFirstName] = useState('');
@@ -24,6 +25,9 @@ function Dashboard({ onLogout }) {
     const [title, setTitle] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
 
     const [toastMessage, setToastMessage] = useState(null);
 
@@ -92,6 +96,14 @@ function Dashboard({ onLogout }) {
         setShowDeleteModal(false);
         setSelectedContact(null);
         triggerToast('Contact removed.');
+    };
+
+    const handlePasswordReset = (e) => {
+        e.preventDefault();
+        setShowChangePasswordModal(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        triggerToast('Password updated successfully.');
     };
 
     return (
@@ -317,6 +329,13 @@ function Dashboard({ onLogout }) {
                                     <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: '#64748B', marginBottom: '6px' }}>Primary Email Address</label>
                                     <input type="email" defaultValue="areeb.khan@example.com" style={{ width: '100%', padding: '10px 12px', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', color: '#0F172A', outline: 'none', boxSizing: 'border-box' }} />
                                 </div>
+
+                                <button
+                                    onClick={() => setShowChangePasswordModal(true)}
+                                    style={{ padding: '10px 16px', background: '#F8FAFC', color: '#0F172A', border: '1px solid #CBD5E1', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}
+                                >
+                                    Change Password
+                                </button>
                             </div>
 
                         </div>
@@ -339,6 +358,30 @@ function Dashboard({ onLogout }) {
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <button type="submit" style={{ flex: '1', padding: '10px', background: '#2563EB', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Save Contact</button>
                                 <button type="button" onClick={() => { setShowCreateModal(false); setShowUpdateModal(false); }} style={{ flex: '1', padding: '10px', background: '#F1F5F9', color: '#0F172A', border: '1px solid #CBD5E1', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Change Password Modal */}
+            {showChangePasswordModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(15, 23, 42, 0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '32px', borderRadius: '12px', width: '100%', maxWidth: '400px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
+                        <h3 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#0F172A', fontWeight: '700' }}>Change Password</h3>
+                        <form onSubmit={handlePasswordReset}>
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ fontSize: '12px', fontWeight: '500', color: '#64748B' }}>Current Password</label>
+                                <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#0F172A', boxSizing: 'border-box', marginTop: '4px' }} />
+                            </div>
+                            <div style={{ marginBottom: '24px' }}>
+                                <label style={{ fontSize: '12px', fontWeight: '500', color: '#64748B' }}>New Password</label>
+                                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#0F172A', boxSizing: 'border-box', marginTop: '4px' }} />
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button type="submit" style={{ flex: '1', padding: '10px', background: '#2563EB', color: '#FFFFFF', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Reset</button>
+                                <button type="button" onClick={() => { setShowChangePasswordModal(false); setCurrentPassword(''); setNewPassword(''); }} style={{ flex: '1', padding: '10px', background: '#F1F5F9', color: '#0F172A', border: '1px solid #CBD5E1', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
                             </div>
                         </form>
                     </div>
