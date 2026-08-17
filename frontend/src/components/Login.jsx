@@ -6,7 +6,6 @@ function Login({ onLoginSuccess }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Login submitted with:", email);
         onLoginSuccess();
     };
 

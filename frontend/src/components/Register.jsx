@@ -7,7 +7,6 @@ function Register({ onRegisterSuccess }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Register submitted with:", { username, email });
         onRegisterSuccess();
     };
 

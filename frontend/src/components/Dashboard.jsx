@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function Dashboard({ onLogout }) {
     const [activeTab, setActiveTab] = useState('contacts');
@@ -38,6 +38,14 @@ function Dashboard({ onLogout }) {
     );
 
     const totalPages = Math.ceil(filteredContacts.length / contactsPerPage) || 1;
+
+    // Fix for CodeRabbit: Clamp currentPage when totalPages shrinks or search changes
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [totalPages, currentPage]);
+
     const indexOfLastContact = currentPage * contactsPerPage;
     const indexOfFirstContact = indexOfLastContact - contactsPerPage;
     const currentContacts = filteredContacts.slice(indexOfFirstContact, indexOfLastContact);
