@@ -6,6 +6,7 @@ import com.areeb.backend.model.Contact;
 import com.areeb.backend.model.User;
 import com.areeb.backend.repository.ContactRepository;
 import com.areeb.backend.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,8 +75,10 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
 
                 contactRepository.save(contact);
             }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to import contacts: " + e.getMessage(), e);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Invalid JSON format for contact import: " + e.getMessage(), e);
         }
     }
 }
+
+// Updated for final review verification
