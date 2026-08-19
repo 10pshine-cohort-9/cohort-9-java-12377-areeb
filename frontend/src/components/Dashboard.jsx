@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import UserProfile from './UserProfile';
+import ContactCard from './ContactCard';
 
 function Dashboard({ onLogout }) {
     const [activeTab, setActiveTab] = useState('contacts');
@@ -43,7 +45,6 @@ function Dashboard({ onLogout }) {
 
     const totalPages = Math.ceil(filteredContacts.length / contactsPerPage) || 1;
 
-    // Fix for CodeRabbit: Clamp currentPage when totalPages shrinks or search changes
     useEffect(() => {
         if (currentPage > totalPages) {
             setCurrentPage(totalPages);
@@ -116,7 +117,7 @@ function Dashboard({ onLogout }) {
                 </div>
             )}
 
-            {/* Sidebar matching light theme */}
+            {/* Sidebar */}
             <div style={{ width: '260px', background: '#FFFFFF', borderRight: '1px solid #E2E8F0', padding: '28px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px', paddingLeft: '8px' }}>
@@ -159,7 +160,6 @@ function Dashboard({ onLogout }) {
 
                 {/* Top Header Command Bar */}
                 <div style={{ height: '72px', background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxSizing: 'border-box' }}>
-
                     <div style={{ position: 'relative', width: '340px' }}>
                         <input
                             type="text"
@@ -211,33 +211,12 @@ function Dashboard({ onLogout }) {
                             {viewMode === 'card' ? (
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
                                     {currentContacts.map(contact => (
-                                        <div key={contact.id} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                                            <div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-                                                    <div style={{ width: '40px', height: '40px', background: '#DBEAFE', color: '#2563EB', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '15px' }}>
-                                                        {contact.firstName[0]}{contact.lastName[0]}
-                                                    </div>
-                                                    <div>
-                                                        <h3 style={{ margin: '0 0 2px 0', fontSize: '15px', fontWeight: '600', color: '#0F172A' }}>{contact.firstName} {contact.lastName}</h3>
-                                                        <span style={{ fontSize: '11px', background: '#F1F5F9', color: '#475569', padding: '2px 6px', borderRadius: '4px', fontWeight: '500' }}>{contact.title}</span>
-                                                    </div>
-                                                </div>
-
-                                                <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                                    <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                                                        <span>{contact.emails[0]?.address}</span>
-                                                    </div>
-                                                    <div style={{ background: '#F8FAFC', padding: '8px 10px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                                                        <span>{contact.phones[0]?.number}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                <button onClick={() => openUpdateModal(contact)} style={{ flex: '1', padding: '7px', background: '#F8FAFC', color: '#0F172A', border: '1px solid #CBD5E1', borderRadius: '6px', fontWeight: '500', cursor: 'pointer', fontSize: '12px' }}>Edit</button>
-                                                <button onClick={() => { setSelectedContact(contact); setShowDeleteModal(true); }} style={{ flex: '1', padding: '7px', background: '#FEF2F2', color: '#DC2626', border: '1px solid #FCA5A5', borderRadius: '6px', fontWeight: '500', cursor: 'pointer', fontSize: '12px' }}>Delete</button>
-                                            </div>
-                                        </div>
+                                        <ContactCard
+                                            key={contact.id}
+                                            contact={contact}
+                                            onEdit={openUpdateModal}
+                                            onDelete={(c) => { setSelectedContact(c); setShowDeleteModal(true); }}
+                                        />
                                     ))}
                                 </div>
                             ) : (
@@ -272,9 +251,9 @@ function Dashboard({ onLogout }) {
 
                             {/* Pagination Bar */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '12px 20px', borderRadius: '10px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
-                <span style={{ fontSize: '13px', color: '#64748B' }}>
-                  Page {currentPage} of {totalPages}
-                </span>
+                                <span style={{ fontSize: '13px', color: '#64748B' }}>
+                                    Page {currentPage} of {totalPages}
+                                </span>
                                 <div style={{ display: 'flex', gap: '8px' }}>
                                     <button
                                         disabled={currentPage === 1}
@@ -295,50 +274,11 @@ function Dashboard({ onLogout }) {
 
                         </div>
                     ) : (
-                        /* User Profile Screen */
-                        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '24px', maxWidth: '900px' }}>
-
-                            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '28px', textAlign: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                                <div style={{ width: '72px', height: '72px', background: '#DBEAFE', color: '#2563EB', borderRadius: '50%', margin: '0 auto 16px auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: '700' }}>
-                                    AK
-                                </div>
-                                <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', color: '#0F172A' }}>Areeb Khan</h3>
-                                <p style={{ margin: '0 0 20px 0', color: '#64748B', fontSize: '13px' }}>areeb.khan@example.com</p>
-
-                                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', display: 'flex', justifyContent: 'space-around' }}>
-                                    <div>
-                                        <div style={{ fontSize: '16px', fontWeight: '700', color: '#0F172A' }}>{contacts.length}</div>
-                                        <div style={{ fontSize: '11px', color: '#64748B' }}>Contacts</div>
-                                    </div>
-                                    <div style={{ width: '1px', background: '#E2E8F0' }}></div>
-                                    <div>
-                                        <div style={{ fontSize: '16px', fontWeight: '700', color: '#2563EB' }}>2026</div>
-                                        <div style={{ fontSize: '11px', color: '#64748B' }}>Joined</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '28px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                                <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#0F172A' }}>Account Information</h2>
-
-                                <div style={{ marginBottom: '16px' }}>
-                                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: '#64748B', marginBottom: '6px' }}>Display Username</label>
-                                    <input type="text" defaultValue="areeb.khan" style={{ width: '100%', padding: '10px 12px', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', color: '#0F172A', outline: 'none', boxSizing: 'border-box' }} />
-                                </div>
-                                <div style={{ marginBottom: '20px' }}>
-                                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: '#64748B', marginBottom: '6px' }}>Primary Email Address</label>
-                                    <input type="email" defaultValue="areeb.khan@example.com" style={{ width: '100%', padding: '10px 12px', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', color: '#0F172A', outline: 'none', boxSizing: 'border-box' }} />
-                                </div>
-
-                                <button
-                                    onClick={() => setShowChangePasswordModal(true)}
-                                    style={{ padding: '10px 16px', background: '#F8FAFC', color: '#0F172A', border: '1px solid #CBD5E1', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}
-                                >
-                                    Change Password
-                                </button>
-                            </div>
-
-                        </div>
+                        /* Render Modular User Profile Component */
+                        <UserProfile
+                            contactsCount={contacts.length}
+                            onOpenChangePassword={() => setShowChangePasswordModal(true)}
+                        />
                     )}
                 </div>
             </div>
