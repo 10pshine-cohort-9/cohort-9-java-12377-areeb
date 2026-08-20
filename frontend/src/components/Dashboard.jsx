@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import UserProfile from './UserProfile';
 import ContactCard from './ContactCard';
+import { exportContactsToFile, importContactsFromFile } from './fileUtils';
+import {
+    fetchContactsApi,
+    createContactApi,
+    updateContactApi,
+    deleteContactApi,
+    changePasswordApi
+} from '../services/api';
 
 function Dashboard({ onLogout }) {
     const [activeTab, setActiveTab] = useState('contacts');
     const [viewMode, setViewMode] = useState('card');
 
-    const [contacts, setContacts] = useState([
-        { id: 1, firstName: 'Sarah', lastName: 'Jenkins', title: 'Senior Developer', emails: [{ type: 'Work', address: 'sarah@work.com' }], phones: [{ type: 'Mobile', number: '555-0192' }] },
-        { id: 2, firstName: 'Michael', lastName: 'Chang', title: 'Product Manager', emails: [{ type: 'Personal', address: 'mike@gmail.com' }], phones: [{ type: 'Work', number: '555-8371' }] },
-        { id: 3, firstName: 'Elena', lastName: 'Rostova', title: 'UX Architect', emails: [{ type: 'Home', address: 'elena@rostova.io' }], phones: [{ type: 'Home', number: '555-9021' }] }
-    ]);
-
+    const [contacts, setContacts] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const contactsPerPage = 4;
@@ -38,6 +41,20 @@ function Dashboard({ onLogout }) {
         setTimeout(() => setToastMessage(null), 3000);
     };
 
+    // --- Load Contacts from Backend API on Mount ---
+    useEffect(() => {
+        loadContacts();
+    }, []);
+
+    const loadContacts = async () => {
+        try {
+            const data = await fetchContactsApi();
+            setContacts(data);
+        } catch (error) {
+            triggerToast('Failed to load contacts from database.');
+        }
+    };
+
     const filteredContacts = contacts.filter(c =>
         c.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.lastName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -55,20 +72,24 @@ function Dashboard({ onLogout }) {
     const indexOfFirstContact = indexOfLastContact - contactsPerPage;
     const currentContacts = filteredContacts.slice(indexOfFirstContact, indexOfLastContact);
 
-    const handleCreateContact = (e) => {
+    const handleCreateContact = async (e) => {
         e.preventDefault();
-        const newEntry = {
-            id: Date.now(),
-            firstName,
-            lastName,
-            title,
-            emails: [{ type: 'Work', address: email }],
-            phones: [{ type: 'Mobile', number: phone }]
-        };
-        setContacts([...contacts, newEntry]);
-        setShowCreateModal(false);
-        setFirstName(''); setLastName(''); setTitle(''); setEmail(''); setPhone('');
-        triggerToast('Contact added successfully.');
+        try {
+            const newEntry = {
+                firstName,
+                lastName,
+                title,
+                emails: [{ type: 'Work', address: email }],
+                phones: [{ type: 'Mobile', number: phone }]
+            };
+            await createContactApi(newEntry);
+            await loadContacts(); // Refresh list from server
+            setShowCreateModal(false);
+            setFirstName(''); setLastName(''); setTitle(''); setEmail(''); setPhone('');
+            triggerToast('Contact added successfully.');
+        } catch (error) {
+            triggerToast('Error saving contact.');
+        }
     };
 
     const openUpdateModal = (contact) => {
@@ -81,30 +102,58 @@ function Dashboard({ onLogout }) {
         setShowUpdateModal(true);
     };
 
-    const handleUpdateContact = (e) => {
+    const handleUpdateContact = async (e) => {
         e.preventDefault();
-        setContacts(contacts.map(c => c.id === selectedContact.id ? {
-            ...c, firstName, lastName, title,
-            emails: [{ type: 'Work', address: email }],
-            phones: [{ type: 'Mobile', number: phone }]
-        } : c));
-        setShowUpdateModal(false);
-        triggerToast('Contact updated successfully.');
+        try {
+            const updatedData = {
+                firstName,
+                lastName,
+                title,
+                emails: [{ type: 'Work', address: email }],
+                phones: [{ type: 'Mobile', number: phone }]
+            };
+            await updateContactApi(selectedContact.id, updatedData);
+            await loadContacts(); // Refresh list from server
+            setShowUpdateModal(false);
+            triggerToast('Contact updated successfully.');
+        } catch (error) {
+            triggerToast('Error updating contact.');
+        }
     };
 
-    const handleDeleteConfirm = () => {
-        setContacts(contacts.filter(c => c.id !== selectedContact.id));
-        setShowDeleteModal(false);
-        setSelectedContact(null);
-        triggerToast('Contact removed.');
+    const handleDeleteConfirm = async () => {
+        try {
+            await deleteContactApi(selectedContact.id);
+            setContacts(contacts.filter(c => c.id !== selectedContact.id));
+            setShowDeleteModal(false);
+            setSelectedContact(null);
+            triggerToast('Contact removed.');
+        } catch (error) {
+            triggerToast('Error deleting contact.');
+        }
     };
 
-    const handlePasswordReset = (e) => {
+    const handlePasswordReset = async (e) => {
         e.preventDefault();
-        setShowChangePasswordModal(false);
-        setCurrentPassword('');
-        setNewPassword('');
-        triggerToast('Password updated successfully.');
+        try {
+            await changePasswordApi({ currentPassword, newPassword });
+            setShowChangePasswordModal(false);
+            setCurrentPassword('');
+            setNewPassword('');
+            triggerToast('Password updated successfully.');
+        } catch (error) {
+            triggerToast('Failed to update password.');
+        }
+    };
+
+    const handleExportContacts = () => {
+        exportContactsToFile(contacts, triggerToast);
+    };
+
+    const handleImportContacts = async (e) => {
+        importContactsFromFile(e, setContacts, triggerToast);
+        // Optional: If you want imported contacts saved to database instantly,
+        // you can loop through them and post them via createContactApi here.
     };
 
     return (
@@ -191,20 +240,46 @@ function Dashboard({ onLogout }) {
                                     <p style={{ margin: '0', color: '#64748B', fontSize: '13px' }}>Manage your professional and personal network.</p>
                                 </div>
 
-                                {/* View Mode Toggle Switch */}
-                                <div style={{ display: 'flex', background: '#E2E8F0', padding: '3px', borderRadius: '8px' }}>
+                                {/* Controls Toolbar (View Toggle + Download/Upload Buttons) */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+
                                     <button
-                                        onClick={() => setViewMode('card')}
-                                        style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: viewMode === 'card' ? '#FFFFFF' : 'transparent', color: viewMode === 'card' ? '#0F172A' : '#64748B', fontSize: '12px', fontWeight: '600', cursor: 'pointer', boxShadow: viewMode === 'card' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+                                        onClick={handleExportContacts}
+                                        style={{ padding: '6px 12px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', color: '#0F172A', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
                                     >
-                                        Cards
+                                        Download
                                     </button>
+
+                                    <input
+                                        type="file"
+                                        id="import-file-input"
+                                        accept=".txt"
+                                        style={{ display: 'none' }}
+                                        onChange={handleImportContacts}
+                                    />
+
                                     <button
-                                        onClick={() => setViewMode('table')}
-                                        style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: viewMode === 'table' ? '#FFFFFF' : 'transparent', color: viewMode === 'table' ? '#0F172A' : '#64748B', fontSize: '12px', fontWeight: '600', cursor: 'pointer', boxShadow: viewMode === 'table' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+                                        onClick={() => document.getElementById('import-file-input').click()}
+                                        style={{ padding: '6px 12px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', color: '#0F172A', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
                                     >
-                                        Table
+                                        Upload
                                     </button>
+
+                                    {/* View Mode Toggle Switch */}
+                                    <div style={{ display: 'flex', background: '#E2E8F0', padding: '3px', borderRadius: '8px', marginLeft: '8px' }}>
+                                        <button
+                                            onClick={() => setViewMode('card')}
+                                            style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: viewMode === 'card' ? '#FFFFFF' : 'transparent', color: viewMode === 'card' ? '#0F172A' : '#64748B', fontSize: '12px', fontWeight: '600', cursor: 'pointer', boxShadow: viewMode === 'card' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+                                        >
+                                            Cards
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode('table')}
+                                            style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: viewMode === 'table' ? '#FFFFFF' : 'transparent', color: viewMode === 'table' ? '#0F172A' : '#64748B', fontSize: '12px', fontWeight: '600', cursor: 'pointer', boxShadow: viewMode === 'table' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}
+                                        >
+                                            Table
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -274,7 +349,6 @@ function Dashboard({ onLogout }) {
 
                         </div>
                     ) : (
-                        /* Render Modular User Profile Component */
                         <UserProfile
                             contactsCount={contacts.length}
                             onOpenChangePassword={() => setShowChangePasswordModal(true)}

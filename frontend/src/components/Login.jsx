@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { loginApi } from '../services/api';
 
 function Login({ onLoginSuccess }) {
     const [email, setEmail] = useState('');
@@ -12,21 +13,8 @@ function Login({ onLoginSuccess }) {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
+            const data = await loginApi(email, password);
 
-            if (!response.ok) {
-                throw new Error('Invalid email or password.');
-            }
-
-            const data = await response.json();
-
-            // Assuming your backend returns a JWT token or user object
             if (data.token) {
                 localStorage.setItem('token', data.token);
             }
