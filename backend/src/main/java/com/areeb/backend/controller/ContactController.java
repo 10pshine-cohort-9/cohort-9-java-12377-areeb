@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 
@@ -44,13 +43,9 @@ public class ContactController {
 
     @PostMapping
     public ResponseEntity<ContactDto> createContact(Principal principal, @Valid @RequestBody ContactDto contactDto) {
-        try {
-            Long userId = getUserId(principal);
-            ContactDto createdContact = contactService.createContact(userId, contactDto);
-            return new ResponseEntity<>(createdContact, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        Long userId = getUserId(principal);
+        ContactDto createdContact = contactService.createContact(userId, contactDto);
+        return new ResponseEntity<>(createdContact, HttpStatus.CREATED);
     }
 
     @PutMapping("/{contactId}")
@@ -58,35 +53,23 @@ public class ContactController {
             Principal principal,
             @PathVariable Long contactId,
             @Valid @RequestBody ContactDto contactDto) {
-        try {
-            Long userId = getUserId(principal);
-            ContactDto updatedContact = contactService.updateContact(userId, contactId, contactDto);
-            return ResponseEntity.ok(updatedContact);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        Long userId = getUserId(principal);
+        ContactDto updatedContact = contactService.updateContact(userId, contactId, contactDto);
+        return ResponseEntity.ok(updatedContact);
     }
 
     @DeleteMapping("/{contactId}")
     public ResponseEntity<Void> deleteContact(Principal principal, @PathVariable Long contactId) {
-        try {
-            Long userId = getUserId(principal);
-            contactService.deleteContact(userId, contactId);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        Long userId = getUserId(principal);
+        contactService.deleteContact(userId, contactId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{contactId}")
     public ResponseEntity<ContactDto> getContactById(Principal principal, @PathVariable Long contactId) {
-        try {
-            Long userId = getUserId(principal);
-            ContactDto contactDto = contactService.getContactById(userId, contactId);
-            return ResponseEntity.ok(contactDto);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        }
+        Long userId = getUserId(principal);
+        ContactDto contactDto = contactService.getContactById(userId, contactId);
+        return ResponseEntity.ok(contactDto);
     }
 
     @GetMapping
@@ -94,16 +77,12 @@ public class ContactController {
             Principal principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        try {
-            Long userId = getUserId(principal);
-            int safePage = Math.max(0, page);
-            int safeSize = Math.clamp(size, 1, 50);
-            Pageable pageable = PageRequest.of(safePage, safeSize);
-            Page<ContactDto> contacts = contactService.getAllContacts(userId, pageable);
-            return ResponseEntity.ok(contacts);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        Long userId = getUserId(principal);
+        int safePage = Math.max(0, page);
+        int safeSize = Math.clamp(size, 1, 50);
+        Pageable pageable = PageRequest.of(safePage, safeSize);
+        Page<ContactDto> contacts = contactService.getAllContacts(userId, pageable);
+        return ResponseEntity.ok(contacts);
     }
 
     @GetMapping("/search")
@@ -112,40 +91,28 @@ public class ContactController {
             @RequestParam String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        try {
-            Long userId = getUserId(principal);
-            int safePage = Math.max(0, page);
-            int safeSize = Math.clamp(size, 1, 50);
-            Pageable pageable = PageRequest.of(safePage, safeSize);
-            Page<ContactDto> contacts = contactService.searchContacts(userId, query, pageable);
-            return ResponseEntity.ok(contacts);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        Long userId = getUserId(principal);
+        int safePage = Math.max(0, page);
+        int safeSize = Math.clamp(size, 1, 50);
+        Pageable pageable = PageRequest.of(safePage, safeSize);
+        Page<ContactDto> contacts = contactService.searchContacts(userId, query, pageable);
+        return ResponseEntity.ok(contacts);
     }
 
     @GetMapping("/export")
     public ResponseEntity<String> exportContacts(Principal principal) {
-        try {
-            Long userId = getUserId(principal);
-            String jsonOutput = exportImportService.exportContactsToJson(userId);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.json")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(jsonOutput);
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        Long userId = getUserId(principal);
+        String jsonOutput = exportImportService.exportContactsToJson(userId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contacts.json")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(jsonOutput);
     }
 
     @PostMapping("/import")
     public ResponseEntity<String> importContacts(Principal principal, @RequestBody String jsonContent) {
-        try {
-            Long userId = getUserId(principal);
-            exportImportService.importContactsFromJson(userId, jsonContent);
-            return ResponseEntity.ok("Contacts imported successfully");
-        } catch (RuntimeException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        Long userId = getUserId(principal);
+        exportImportService.importContactsFromJson(userId, jsonContent);
+        return ResponseEntity.ok("Contacts imported successfully");
     }
 }

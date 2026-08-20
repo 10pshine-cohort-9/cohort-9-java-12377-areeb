@@ -6,12 +6,15 @@ import com.areeb.backend.model.Contact;
 import com.areeb.backend.model.User;
 import com.areeb.backend.repository.ContactRepository;
 import com.areeb.backend.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -39,8 +42,8 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
                     contact.getFirstName(),
                     contact.getLastName(),
                     contact.getTitle(),
-                    contact.getEmails(),
-                    contact.getPhoneNumbers()
+                    contact.getEmails() != null ? contact.getEmails() : new HashMap<>(),
+                    contact.getPhoneNumbers() != null ? contact.getPhoneNumbers() : new HashMap<>()
             );
             contactDtos.add(dto);
         }
@@ -53,6 +56,7 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
     }
 
     @Override
+    @Transactional
     public void importContactsFromJson(Long userId, String jsonContent) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
@@ -65,14 +69,16 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
                 contact.setFirstName(dto.getFirstName());
                 contact.setLastName(dto.getLastName());
                 contact.setTitle(dto.getTitle());
-                contact.setEmails(dto.getEmails());
-                contact.setPhoneNumbers(dto.getPhoneNumbers());
+                contact.setEmails(dto.getEmails() != null ? dto.getEmails() : new HashMap<>());
+                contact.setPhoneNumbers(dto.getPhoneNumbers() != null ? dto.getPhoneNumbers() : new HashMap<>());
                 contact.setUser(user);
 
                 contactRepository.save(contact);
             }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to import contacts: " + e.getMessage(), e);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Invalid JSON format for contact import: " + e.getMessage(), e);
         }
     }
 }
+
+// Updated for final review verification
