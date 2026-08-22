@@ -15,10 +15,11 @@ function Login({ onLoginSuccess }) {
         try {
             const data = await loginApi(email, password);
 
-            if (data.token) {
-                localStorage.setItem('token', data.token);
+            if (!data || !data.token) {
+                throw new Error('Authentication token missing from response.');
             }
 
+            localStorage.setItem('token', data.token);
             setLoading(false);
             onLoginSuccess();
         } catch (err) {

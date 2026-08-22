@@ -18,6 +18,10 @@ export const exportContactsToFile = (contacts, triggerToast) => {
 export const importContactsFromFile = (e, setContacts, triggerToast) => {
     const fileReader = new FileReader();
     if (e.target.files && e.target.files[0]) {
+        fileReader.onerror = () => {
+            triggerToast('Error reading uploaded text file.');
+        };
+
         fileReader.readAsText(e.target.files[0], "UTF-8");
         fileReader.onload = (event) => {
             try {
@@ -54,7 +58,16 @@ export const importContactsFromFile = (e, setContacts, triggerToast) => {
 
                         const uniqueNewContacts = parsedContacts.filter(c => {
                             const email = c.emails[0]?.address?.toLowerCase();
-                            return email && !existingEmails.has(email);
+                            if (!email) return false;
+
+                            // Check against existing contacts and already processed new contacts in this batch
+                            if (existingEmails.has(email)) {
+                                return false;
+                            }
+
+                            // Track this email so subsequent duplicates in the same file are caught
+                            existingEmails.add(email);
+                            return true;
                         });
 
                         if (uniqueNewContacts.length === 0) {

@@ -7,8 +7,13 @@ function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLogin, setIsLogin] = useState(true);
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+    };
+
     if (isLoggedIn) {
-        return <Dashboard onLogout={() => setIsLoggedIn(false)} />;
+        return <Dashboard onLogout={handleLogout} />;
     }
 
     return (
@@ -52,7 +57,11 @@ function App() {
                 </div>
             </div>
 
-            {isLogin ? <Login onLoginSuccess={() => setIsLoggedIn(true)} /> : <Register onRegisterSuccess={() => setIsLoggedIn(true)} />}
+            {isLogin ? (
+                <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+            ) : (
+                <Register onRegisterSuccess={() => setIsLogin(true)} />
+            )}
         </div>
     );
 }

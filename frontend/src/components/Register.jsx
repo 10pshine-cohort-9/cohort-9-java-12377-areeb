@@ -16,6 +16,7 @@ function Register({ onRegisterSuccess }) {
         try {
             await registerApi({ username, email, password });
             setLoading(false);
+            // Instead of entering the dashboard, switch back to Sign In
             onRegisterSuccess();
         } catch (err) {
             setLoading(false);

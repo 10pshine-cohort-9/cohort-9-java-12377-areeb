@@ -61,10 +61,22 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
+        if (jsonContent == null || jsonContent.trim().isEmpty()) {
+            throw new IllegalArgumentException("Import content cannot be null or empty.");
+        }
+
         try {
             List<ContactDto> contactDtos = objectMapper.readValue(jsonContent, new TypeReference<>() {});
 
+            if (contactDtos == null) {
+                throw new IllegalArgumentException("Imported contact list cannot be null.");
+            }
+
             for (ContactDto dto : contactDtos) {
+                if (dto == null) {
+                    throw new IllegalArgumentException("Contact entry cannot be null.");
+                }
+
                 Contact contact = new Contact();
                 contact.setFirstName(dto.getFirstName());
                 contact.setLastName(dto.getLastName());
@@ -80,5 +92,3 @@ public class ContactExportImportServiceImpl implements ContactExportImportServic
         }
     }
 }
-
-// Updated for final review verification
